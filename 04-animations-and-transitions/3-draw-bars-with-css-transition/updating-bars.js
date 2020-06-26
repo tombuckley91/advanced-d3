@@ -93,8 +93,9 @@ async function drawBars() {
 
     const barText = binGroups.select("text")
         .attr("x", d => xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2)
-        .attr("y", d => yScale(yAccessor(d)) - 5)
-        .text(yAccessor)
+        .attr("y", 0)
+        .style("transform", d => `translateY(${yScale(yAccessor(d)) - 5}px)`)
+        .text(d => yAccessor(d) || "")
 
     const mean = d3.mean(dataset, metricAccessor)
 

@@ -30,7 +30,7 @@ async function drawBars() {
   const bounds = wrapper.append("g").style("transform", `translate(${
     dimensions.margin.left
     }px, ${dimensions.margin.top
-    }px)`)
+    }px)`).attr("id", "bounds")
 
   const xScale = d3.scaleLinear()
     .domain(d3.extent(dataset, metricAccessor))
@@ -46,7 +46,7 @@ async function drawBars() {
 
   const yScale = d3.scaleLinear().domain([0, d3.max(bins, yAccessor)]).range([dimensions.boundedHeight, 0]).nice();
 
-  const binsGroup = bounds.append("g");
+  const binsGroup = bounds.append("g").attr("id", "bins");
 
   const binGroups = binsGroup.selectAll("g").data(bins).enter().append("g")
 
@@ -59,8 +59,19 @@ async function drawBars() {
     .attr("fill", "cornflowerblue")
 
   const barText = binGroups.filter(yAccessor).append("text")
-    .attr("x", d => xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2).attr("y", d => yScale(yAccessor(d)) - 5)
+    .attr("x", d => xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2).attr("y", d => yScale(yAccessor(d)) - 5).text(yAccessor).style("text-anchor", "middle").attr("fill", "darkgrey").style("font-size", "12px").style("font-family", "sans-serif")
 
+  const mean = d3.mean(dataset, metricAccessor);
+
+  const meanLine = bounds.append("line").attr("x1", xScale(mean)).attr("x2", xScale(mean)).attr("y1", -15).attr("y2", dimensions.boundedHeight).attr("stroke", "maroon").attr("stroke-dasharray", "2px 4px")
+
+  bounds.append("text").attr("x", xScale(mean)).attr("y", -20).text("Mean").attr("fill", "maroon").style("font-size", "12px").style("text-anchor", "middle");
+
+  const xAxisGenerator = d3.axisBottom().scale(xScale);
+
+  const xAxis = bounds.append("g").call(xAxisGenerator).style("transform", `translateY(${dimensions.boundedHeight}px)`);
+
+  const xAxisLabel = xAxis.append("text").attr("x", dimensions.boundedWidth / 2).attr("y", dimensions.margin.bottom - 10).attr("fill", "black").style("font-size", "1.4em").text("Humidity")
 
 }
 

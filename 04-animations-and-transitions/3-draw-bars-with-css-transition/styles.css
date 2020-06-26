@@ -1,5 +1,6 @@
 .bin rect {
     fill: cornflowerblue;
+    transition: height  1s ease-out, y 1s ease-out;
 }
 
 .bin text {
@@ -7,6 +8,7 @@
     fill: darkgrey;
     font-size: 12px;
     font-family: sans-serif;
+    transition: transform 1s ease-out;
 }
 
 .mean {
