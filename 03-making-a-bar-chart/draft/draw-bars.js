@@ -1,7 +1,7 @@
-async function drawBars() {
+async function drawHistogram(metric) {
   const dataset = await d3.json("./../../my_weather_data.json")
 
-  const metricAccessor = d => d.humidity
+  const metricAccessor = d => d[metric]
   const yAccessor = d => d.length
 
   const width = 600
@@ -26,6 +26,11 @@ async function drawBars() {
     .append("svg")
     .attr("width", dimensions.width)
     .attr("height", dimensions.height)
+    .attr("role", "figure")
+    .attr("tabindex", "0")
+
+  wrapper.append("title").text("Histogram looking at the distribution of humidity in 2016")
+
 
   const bounds = wrapper.append("g").style("transform", `translate(${
     dimensions.margin.left
@@ -46,9 +51,9 @@ async function drawBars() {
 
   const yScale = d3.scaleLinear().domain([0, d3.max(bins, yAccessor)]).range([dimensions.boundedHeight, 0]).nice();
 
-  const binsGroup = bounds.append("g").attr("id", "bins");
+  const binsGroup = bounds.append("g").attr("id", "bins").attr("tabindex", "0").attr("role", "list").attr("aria-label", "histogram bars ")
 
-  const binGroups = binsGroup.selectAll("g").data(bins).enter().append("g")
+  const binGroups = binsGroup.selectAll("g").data(bins).enter().append("g").attr("tabindex", "0").attr("role", "listitem").attr("aria-label", d => `There were ${yAccessor(d)} days between ${d.x0.toString().slice(0, 4)} and ${d.x1.toString().slice(0, 4)} humidity levels`)
 
 
   const barRects = binGroups.append("rect").attr("x", d => xScale(d.x0) + barPadding / 2).attr("y", d => yScale(yAccessor(d))).attr("width", d => d3.max([
@@ -71,8 +76,19 @@ async function drawBars() {
 
   const xAxis = bounds.append("g").call(xAxisGenerator).style("transform", `translateY(${dimensions.boundedHeight}px)`);
 
-  const xAxisLabel = xAxis.append("text").attr("x", dimensions.boundedWidth / 2).attr("y", dimensions.margin.bottom - 10).attr("fill", "black").style("font-size", "1.4em").text("Humidity")
+  const xAxisLabel = xAxis.append("text").attr("x", dimensions.boundedWidth / 2).attr("y", dimensions.margin.bottom - 10).attr("fill", "black").style("font-size", "1.4em").text(metric).style("text-transform", "capitalize")
+
+  wrapper.selectAll("text").attr("role", "presentation").attr("aria-hidden", "true")
 
 }
 
-drawBars()
+const metrics = ["windSpeed", "moonPhase",
+  "dewPoint",
+  "humidity",
+  "uvIndex",
+  "windBearing",
+  "temperatureMin",
+  "temperatureMax",
+]
+
+metrics.forEach(drawHistogram)
