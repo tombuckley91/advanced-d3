@@ -86,6 +86,7 @@ async function drawBars() {
     binGroups = newBinGroups.merge(binGroups)
 
     const barRects = binGroups.select("rect")
+      .transition()
         .attr("x", d => xScale(d.x0) + barPadding)
         .attr("y", d => yScale(yAccessor(d)))
         .attr("height", d => dimensions.boundedHeight - yScale(yAccessor(d)))
@@ -93,6 +94,8 @@ async function drawBars() {
           0,
           xScale(d.x1) - xScale(d.x0) - barPadding
         ]))
+
+        console.log("I am the bar rects: ", barRects.select("rect"));
 
     const barText = binGroups.select("text")
         .attr("x", d => xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2)
@@ -141,5 +144,6 @@ async function drawBars() {
     selectedMetricIndex = (selectedMetricIndex + 1) % metrics.length
     drawHistogram(metrics[selectedMetricIndex])
   }
+
 }
 drawBars()
