@@ -33,16 +33,28 @@ async function drawLineChart() {
   const bounds = wrapper.append("g")
     .style("transform", `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`)
 
+  bounds.append("defs")
+    .append("clipPath")
+    .attr("id", "bounds-clip-path")
+    .append("rect")
+    .attr("height", dimensions.boundedHeight)
+    .attr("width", dimensions.boundedWidth);
+
+
   // init static elements
   bounds.append("rect")
     .attr("class", "freezing")
-  bounds.append("path")
+
+  const clip = bounds.append("g").attr("clip-path", "url(#bounds-clip-path)");
+
+  clip.append("path")
     .attr("class", "line")
   bounds.append("g")
     .attr("class", "x-axis")
     .style("transform", `translateY(${dimensions.boundedHeight}px)`)
   bounds.append("g")
     .attr("class", "y-axis")
+
 
   const drawLine = (dataset) => {
 
@@ -60,7 +72,7 @@ async function drawLineChart() {
       .attr("height", dimensions.boundedHeight - freezingTemperaturePlacement)
 
     const xScale = d3.scaleTime()
-      .domain(d3.extent(dataset, xAccessor))
+      .domain(d3.extent(dataset.slice(1), xAccessor))
       .range([0, dimensions.boundedWidth])
 
     // 5. Draw data
@@ -76,6 +88,8 @@ async function drawLineChart() {
     const line = bounds.select(".line")
       .attr("d", lineGenerator(dataset))
       .style("transform", `translateX(${pixelsBetweenLastPoints}px)`)
+      .transition().duration(1000)
+      .style("transform", "none")
 
     // 6. Draw peripherals
 
@@ -98,10 +112,12 @@ async function drawLineChart() {
   setInterval(addNewDay, 1500)
 
   function addNewDay() {
+    const generatedPoint = generateNewDataPoint(dataset)
     dataset = [
       ...dataset.slice(1),
-      generateNewDataPoint(dataset)
+      generatedPoint
     ]
+
     drawLine(dataset)
   }
 
