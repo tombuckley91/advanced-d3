@@ -23,24 +23,24 @@ async function drawBars() {
 
   const wrapper = d3.select("#wrapper")
     .append("svg")
-      .attr("width", dimensions.width)
-      .attr("height", dimensions.height)
+    .attr("width", dimensions.width)
+    .attr("height", dimensions.height)
 
   const bounds = wrapper.append("g")
-      .style("transform", `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`)
+    .style("transform", `translate(${dimensions.margin.left}px, ${dimensions.margin.top}px)`)
 
   // init static elements
   bounds.append("g")
-      .attr("class", "bins")
+    .attr("class", "bins")
   bounds.append("line")
-      .attr("class", "mean")
+    .attr("class", "mean")
   bounds.append("g")
-      .attr("class", "x-axis")
-      .style("transform", `translateY(${dimensions.boundedHeight}px)`)
+    .attr("class", "x-axis")
+    .style("transform", `translateY(${dimensions.boundedHeight}px)`)
     .append("text")
-      .attr("class", "x-axis-label")
-      .attr("x", dimensions.boundedWidth / 2)
-      .attr("y", dimensions.margin.bottom - 10)
+    .attr("class", "x-axis-label")
+    .attr("x", dimensions.boundedWidth / 2)
+    .attr("y", dimensions.margin.bottom - 10)
 
   const drawHistogram = metric => {
     const metricAccessor = d => d[metric]
@@ -77,38 +77,46 @@ async function drawBars() {
     oldBinGroups.remove()
 
     const newBinGroups = binGroups.enter().append("g")
-        .attr("class", "bin")
+      .attr("class", "bin")
 
     newBinGroups.append("rect")
-    newBinGroups.append("text")
+
+    newBinGroups.append("rect").attr("height", 0)
+      .attr("x", d => xScale(d.x0) + barPadding).attr("y", dimensions.boundedHeight).attr("width", d => d3.max([
+        0,
+        xScale(d.x1) - xScale(d.x0) - barPadding]))
+      .style("fill", "yellowgreen")
+
+
+    newBinGroups.append("text").attr("x", d => xScale(d.x0)
+      + (xScale(d.x1) - xScale(d.x0)) / 2)
+      .attr("y", dimensions.boundedHeight)
+
 
     // update binGroups to include new points
     binGroups = newBinGroups.merge(binGroups)
 
-    const barRects = binGroups.select("rect")
-      .transition()
-        .attr("x", d => xScale(d.x0) + barPadding)
-        .attr("y", d => yScale(yAccessor(d)))
-        .attr("height", d => dimensions.boundedHeight - yScale(yAccessor(d)))
-        .attr("width", d => d3.max([
-          0,
-          xScale(d.x1) - xScale(d.x0) - barPadding
-        ]))
+    const barRects = binGroups.select("rect").transition().duration(600)
+      .attr("x", d => xScale(d.x0) + barPadding).attr("y", d => yScale(yAccessor(d))).attr("height", d => dimensions.boundedHeight
+        - yScale(yAccessor(d)))
+      .attr("width", d => d3.max([0,
+        xScale(d.x1) - xScale(d.x0) - barPadding]))
+      .transition().duration(600)
+      .style("fill", "cornflowerblue")
 
-        console.log("I am the bar rects: ", barRects.select("rect"));
-
-    const barText = binGroups.select("text")
-        .attr("x", d => xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)) / 2)
-        .attr("y", d => yScale(yAccessor(d)) - 5)
-        .text(d => yAccessor(d) || "")
+    const barText = binGroups.select("text").transition().duration(600)
+      .attr("x", d => xScale(d.x0)
+        + (xScale(d.x1) - xScale(d.x0)) / 2
+      )
+      .attr("y", d => yScale(yAccessor(d)) - 5).text(d => yAccessor(d) || "")
 
     const mean = d3.mean(dataset, metricAccessor)
 
     const meanLine = bounds.selectAll(".mean")
-        .attr("x1", xScale(mean))
-        .attr("x2", xScale(mean))
-        .attr("y1", -20)
-        .attr("y2", dimensions.boundedHeight)
+      .attr("x1", xScale(mean))
+      .attr("x2", xScale(mean))
+      .attr("y1", -20)
+      .attr("y2", dimensions.boundedHeight)
 
     // 6. Draw peripherals
 
@@ -119,7 +127,7 @@ async function drawBars() {
       .call(xAxisGenerator)
 
     const xAxisLabel = xAxis.select(".x-axis-label")
-        .text(metric)
+      .text(metric)
   }
 
   const metrics = [
@@ -137,7 +145,7 @@ async function drawBars() {
 
   const button = d3.select("body")
     .append("button")
-      .text("Change metric")
+    .text("Change metric")
 
   button.node().addEventListener("click", onClick)
   function onClick() {
